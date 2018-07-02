@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 /**
  * {@link ContentProvider} for Pets app.
@@ -23,6 +24,11 @@ public class PetProvider extends ContentProvider {
     public static final int PET_ID = 101;
 
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+
+    static {
+        sUriMatcher.addURI(PetContract.CONTENT_AUTHORITY, PetContract.PATH_PETS, PETS);
+        sUriMatcher.addURI(PetContract.CONTENT_AUTHORITY, PetContract.PATH_PETS + "/#", PET_ID);
+    }
 
     private PetDbHelper mDbHelper;
 
@@ -100,7 +106,13 @@ public class PetProvider extends ContentProvider {
      */
     @Override
     public Uri insert(@NonNull Uri uri, ContentValues contentValues) {
-        return null;
+        final int match = sUriMatcher.match(uri);
+        switch (match) {
+            case PETS:
+                return insertPet(uri, contentValues);
+            default:
+                throw new IllegalArgumentException("Insertion is not supported for " + uri);
+        }
     }
 
     /**
@@ -126,5 +138,18 @@ public class PetProvider extends ContentProvider {
     @Override
     public String getType(@NonNull Uri uri) {
         return null;
+    }
+
+    private Uri insertPet(Uri uri, ContentValues contentValues) {
+        SQLiteDatabase database = mDbHelper.getWritableDatabase();
+
+        long newRowId = database.insert(PetContract.PetEntry.TABLE_NAME, null, contentValues);
+
+        if (newRowId == -1) {
+            Log.e(LOG_TAG, "Failed to insert row for " + contentValues);
+            return null;
+        }
+
+        return ContentUris.withAppendedId(uri, newRowId);
     }
 }

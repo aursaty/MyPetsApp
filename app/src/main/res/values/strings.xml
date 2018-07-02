@@ -59,4 +59,6 @@
     <!-- Label for dropdown menu option if the pet is female [CHAR LIMIT=20] -->
     <string name="gender_female">Female</string>
     <string name="number_rows_in_db_label">Number of rows in pets database table:</string>
+    <string name="editor_insert_pet_successful_label">Pet saved</string>
+    <string name="editor_insert_pet_failed_label">Error with saving pet</string>
 </resources>
