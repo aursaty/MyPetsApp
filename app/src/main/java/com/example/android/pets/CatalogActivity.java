@@ -36,14 +36,7 @@ import com.example.android.pets.data.PetContract.PetEntry;
  */
 public class CatalogActivity extends AppCompatActivity {
 
-//    private PetDbHelper mDbHelper;
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        displayDatabaseInfo();
-    }
+    private ListView petsListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +53,18 @@ public class CatalogActivity extends AppCompatActivity {
             }
         });
 
-//        mDbHelper = new PetDbHelper(this);
+        petsListView = findViewById(R.id.lvPets);
+
+        View emptyView = findViewById(R.id.empty_view);
+
+        petsListView.setEmptyView(emptyView);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        displayDatabaseInfo();
     }
 
     @Override
@@ -107,8 +111,6 @@ public class CatalogActivity extends AppCompatActivity {
                 PetEntry.CONTENT_URI,
                 projection,
                 null, null, null);
-
-        ListView petsListView = findViewById(R.id.lvPets);
 
         PetCursorAdapter adapter = new PetCursorAdapter(this, cursor);
 
