@@ -121,7 +121,17 @@ public class PetProvider extends ContentProvider {
     @Override
     public int update(@NonNull Uri uri, ContentValues contentValues,
                       String selection, String[] selectionArgs) {
-        return 0;
+        final int match = sUriMatcher.match(uri);
+        switch (match) {
+            case PETS:
+                return updatePet(uri, contentValues, selection, selectionArgs);
+            case PET_ID:
+                selection = PetContract.PetEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                return updatePet(uri, contentValues, selection, selectionArgs);
+            default:
+                throw new IllegalArgumentException("Update is not support for " + uri);
+        }
     }
 
     /**
@@ -163,5 +173,33 @@ public class PetProvider extends ContentProvider {
         }
 
         return ContentUris.withAppendedId(uri, newRowId);
+    }
+
+    private int updatePet(
+            Uri uri, ContentValues contentValues, String selection, String[] selectionArgs) {
+
+        if (contentValues.containsKey(PetContract.PetEntry.COLUMN_PET_NAME)) {
+            String name = contentValues.getAsString(PetContract.PetEntry.COLUMN_PET_NAME);
+            if (name == null)
+                throw new IllegalArgumentException("Pet requires a name");
+        }
+
+        if (contentValues.containsKey(PetContract.PetEntry.COLUMN_PET_GENDER)) {
+            Integer gender = contentValues.getAsInteger(PetContract.PetEntry.COLUMN_PET_GENDER);
+            if (gender == null || !PetContract.PetEntry.isValidGender(gender))
+                throw new IllegalArgumentException("Pet requires valid gender");
+        }
+
+        if (contentValues.containsKey(PetContract.PetEntry.COLUMN_PET_WEIGHT)) {
+            Integer weight = contentValues.getAsInteger(PetContract.PetEntry.COLUMN_PET_WEIGHT);
+            if (weight != null && weight < 0)
+                throw new IllegalArgumentException("Pet requires valid weight");
+        }
+        if (contentValues.size() == 0)
+            return 0;
+
+        SQLiteDatabase database = mDbHelper.getWritableDatabase();
+
+        return database.update(PetContract.PetEntry.TABLE_NAME, contentValues, selection, selectionArgs);
     }
 }
