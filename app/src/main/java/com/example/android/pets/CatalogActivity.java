@@ -27,7 +27,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
+import android.widget.ListView;
 
 import com.example.android.pets.data.PetContract.PetEntry;
 
@@ -108,27 +108,14 @@ public class CatalogActivity extends AppCompatActivity {
                 projection,
                 null, null, null);
 
-        if (cursor != null) {
-            // Display the number of rows in the Cursor (which reflects the number of rows in the
-            // pets table in the database).
-            TextView displayView = findViewById(R.id.text_view_pet);
-            String text = getString(R.string.number_rows_in_db_label) +
-                    cursor.getCount() + "\n\n";
-            displayView.setText(text);
+        ListView petsListView = findViewById(R.id.lvPets);
 
-            while (cursor.moveToNext()) {
-                displayView.append(cursor.getInt(cursor.getColumnIndex(PetEntry._ID)) + "\t" +
-                        cursor.getString(cursor.getColumnIndex(PetEntry.COLUMN_PET_NAME)) + "\t" +
-                        cursor.getString(cursor.getColumnIndex(PetEntry.COLUMN_PET_BREED)) + "\t" +
-                        cursor.getInt(cursor.getColumnIndex(PetEntry.COLUMN_PET_GENDER)) + "\t" +
-                        cursor.getInt(cursor.getColumnIndex(PetEntry.COLUMN_PET_WEIGHT)) + "\n"
-                );
-            }
+        PetCursorAdapter adapter = new PetCursorAdapter(this, cursor);
+
+        petsListView.setAdapter(adapter);
+
+        if (cursor != null)
             cursor.close();
-        }
-        // Always close the cursor when you're done reading from it. This releases all its
-        // resources and makes it invalid.
-
     }
 
     private void insertDummyPet() {
