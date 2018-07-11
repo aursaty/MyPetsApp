@@ -30,6 +30,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.example.android.pets.data.PetContract.PetEntry;
@@ -62,17 +63,22 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         petsListView = findViewById(R.id.lvPets);
         View emptyView = findViewById(R.id.empty_view);
 
+        petsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
+
+                Uri petUri = Uri.withAppendedPath(PetEntry.CONTENT_URI, String.valueOf(id));
+
+                intent.setData(petUri);
+                startActivity(intent);
+            }
+        });
+
         petsListView.setAdapter(mAdapter);
         petsListView.setEmptyView(emptyView);
 
         getLoaderManager().initLoader(0, null, this);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-//        displayDatabaseInfo();
     }
 
     @Override
