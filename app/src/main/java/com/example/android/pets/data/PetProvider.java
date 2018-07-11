@@ -98,6 +98,9 @@ public class PetProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Cannot query unknown URI " + uri);
         }
+        if (getContext() != null)
+            cursor.setNotificationUri(getContext().getContentResolver(), uri);
+
         return cursor;
     }
 
@@ -193,6 +196,9 @@ public class PetProvider extends ContentProvider {
             return null;
         }
 
+        if (getContext() != null)
+            getContext().getContentResolver().notifyChange(uri, null);
+
         return ContentUris.withAppendedId(uri, newRowId);
     }
 
@@ -221,7 +227,13 @@ public class PetProvider extends ContentProvider {
 
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 
-        return database.update(PetContract.PetEntry.TABLE_NAME, contentValues, selection, selectionArgs);
+        int rowsUpdated = database.update(PetContract.PetEntry.TABLE_NAME, contentValues, selection, selectionArgs);
+
+        if (rowsUpdated != 0)
+            if (getContext() != null)
+                getContext().getContentResolver().notifyChange(uri, null);
+
+        return rowsUpdated;
     }
 
 }

@@ -15,9 +15,12 @@
  */
 package com.example.android.pets;
 
+import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -34,9 +37,11 @@ import com.example.android.pets.data.PetContract.PetEntry;
 /**
  * Displays list of pets that were entered and stored in the app.
  */
-public class CatalogActivity extends AppCompatActivity {
+public class CatalogActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private ListView petsListView;
+
+    private PetCursorAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,19 +57,22 @@ public class CatalogActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        mAdapter = new PetCursorAdapter(this, null);
 
         petsListView = findViewById(R.id.lvPets);
-
         View emptyView = findViewById(R.id.empty_view);
 
+        petsListView.setAdapter(mAdapter);
         petsListView.setEmptyView(emptyView);
+
+        getLoaderManager().initLoader(0, null, this);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        displayDatabaseInfo();
+//        displayDatabaseInfo();
     }
 
     @Override
@@ -82,7 +90,7 @@ public class CatalogActivity extends AppCompatActivity {
             // Respond to a click on the "Insert dummy data" menu option
             case R.id.action_insert_dummy_data:
                 insertDummyPet();
-                displayDatabaseInfo();
+//                displayDatabaseInfo();
                 return true;
             // Respond to a click on the "Delete all entries" menu option
             case R.id.action_delete_all_entries:
@@ -92,6 +100,27 @@ public class CatalogActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        String[] projection = {
+                PetEntry._ID,
+                PetEntry.COLUMN_PET_NAME,
+                PetEntry.COLUMN_PET_BREED
+        };
+
+        return new CursorLoader(this, PetEntry.CONTENT_URI,
+                projection, null, null, null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        mAdapter.swapCursor(cursor);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mAdapter.swapCursor(null);
+    }
 
     /**
      * Temporary helper method to display information in the onscreen TextView about the state of
@@ -112,9 +141,9 @@ public class CatalogActivity extends AppCompatActivity {
                 projection,
                 null, null, null);
 
-        PetCursorAdapter adapter = new PetCursorAdapter(this, cursor);
+        mAdapter = new PetCursorAdapter(this, cursor);
 
-        petsListView.setAdapter(adapter);
+        petsListView.setAdapter(mAdapter);
 
         if (cursor != null)
             cursor.close();
