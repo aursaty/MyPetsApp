@@ -61,8 +61,12 @@
     <!-- Label for dropdown menu option if the pet is female [CHAR LIMIT=20] -->
     <string name="gender_female">Female</string>
     <string name="number_rows_in_db_label">Number of rows in pets database table:</string>
+
     <string name="editor_insert_pet_successful_label">Pet saved</string>
     <string name="editor_insert_pet_failed_label">Error with saving pet</string>
+
+    <string name="editor_update_pet_successful_label">Pet updated</string>
+    <string name="editor_update_pet_failed_label">Error with updating pet</string>
 
     <!-- Title text for the empty view, which describes the empty dog house image [CHAR LIMIT=50] -->
     <string name="empty_view_title_text">It\'s a bit lonely here…</string>

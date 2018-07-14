@@ -38,6 +38,8 @@ import android.widget.Toast;
 import com.example.android.pets.data.PetContract;
 import com.example.android.pets.data.PetContract.PetEntry;
 
+import java.net.URI;
+
 /**
  * Allows user to create a new pet or edit an existing one.
  */
@@ -67,19 +69,20 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
      */
     private int mGender = 0;
 
+    private Uri mPetUri;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
 
-        Uri petUri = getIntent().getData();
-        if (petUri == null)
+        mPetUri = getIntent().getData();
+        if (mPetUri == null)
             setTitle(getString(R.string.editor_activity_title_new_pet));
         else {
             setTitle(getString(R.string.editor_activity_title_edit_pet));
 
             Bundle bundle = new Bundle();
-            bundle.putString(PET_URI_BUNDLE_KEY, String.valueOf(petUri));
+            bundle.putString(PET_URI_BUNDLE_KEY, String.valueOf(mPetUri));
 
             getLoaderManager().initLoader(LOADER_ID, bundle, this);
         }
@@ -145,7 +148,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         switch (item.getItemId()) {
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
-                long petId = insertPet();
+                long petId = savePet();
 
                 if (petId == -1) {
                     Toast.makeText(this, "Error with saving pet", Toast.LENGTH_LONG)
@@ -191,7 +194,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         if (cursor.moveToFirst()) {
             mNameEditText.setText(cursor.getString(cursor.getColumnIndex(PetEntry.COLUMN_PET_NAME)));
             mBreedEditText.setText(cursor.getString(cursor.getColumnIndex(PetEntry.COLUMN_PET_BREED)));
-            mWeightEditText.setText(cursor.getInt(cursor.getColumnIndex(PetEntry.COLUMN_PET_WEIGHT)));
+            mWeightEditText.setText(String.valueOf(
+                    cursor.getInt(cursor.getColumnIndex(PetEntry.COLUMN_PET_WEIGHT))));
 
             int gender = cursor.getInt(cursor.getColumnIndex(PetEntry.COLUMN_PET_GENDER));
             switch (gender) {
@@ -216,7 +220,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         mWeightEditText.setText(null);
     }
 
-    private long insertPet() {
+    private long savePet() {
         String nameString = mNameEditText.getText().toString().trim();
         String breedString = mBreedEditText.getText().toString().trim();
         String weightString = mWeightEditText.getText().toString().trim();
@@ -229,20 +233,42 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         petValue.put(PetEntry.COLUMN_PET_GENDER, mGender);
         petValue.put(PetEntry.COLUMN_PET_WEIGHT, weight);
 
-        Uri newPetUri = getContentResolver().insert(PetEntry.CONTENT_URI, petValue);
+        long savedPetId;
 
-        if (newPetUri == null) {
-            Toast.makeText(this,
-                    getString(R.string.editor_insert_pet_failed_label),
-                    Toast.LENGTH_SHORT
-            ).show();
+        if (mPetUri == null) {
+            Uri newPetUri = getContentResolver().insert(PetEntry.CONTENT_URI, petValue);
+
+            if (newPetUri == null) {
+                Toast.makeText(this,
+                        getString(R.string.editor_insert_pet_failed_label),
+                        Toast.LENGTH_SHORT
+                ).show();
+            } else {
+                Toast.makeText(this,
+                        getString(R.string.editor_insert_pet_successful_label),
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+            savedPetId = ContentUris.parseId(newPetUri);
         } else {
-            Toast.makeText(this,
-                    getString(R.string.editor_insert_pet_successful_label),
-                    Toast.LENGTH_SHORT
-            ).show();
-        }
+            savedPetId = getContentResolver().update(
+                    mPetUri,
+                    petValue,
+                    PetEntry._ID,
+                    null);
 
-        return ContentUris.parseId(newPetUri);
+            if (savedPetId == -1) {
+                Toast.makeText(this,
+                        getString(R.string.editor_update_pet_failed_label),
+                        Toast.LENGTH_SHORT
+                ).show();
+            } else {
+                Toast.makeText(this,
+                        getString(R.string.editor_update_pet_successful_label),
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+        }
+        return savedPetId;
     }
 }

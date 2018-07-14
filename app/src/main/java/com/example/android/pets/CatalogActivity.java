@@ -130,33 +130,6 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         mAdapter.swapCursor(null);
     }
 
-    /**
-     * Temporary helper method to display information in the onscreen TextView about the state of
-     * the pets database.
-     */
-    private void displayDatabaseInfo() {
-
-        String[] projection = {
-                PetEntry._ID,
-                PetEntry.COLUMN_PET_NAME,
-                PetEntry.COLUMN_PET_BREED,
-                PetEntry.COLUMN_PET_GENDER,
-                PetEntry.COLUMN_PET_WEIGHT
-        };
-
-        Cursor cursor = getContentResolver().query(
-                PetEntry.CONTENT_URI,
-                projection,
-                null, null, null);
-
-        mAdapter = new PetCursorAdapter(this, cursor);
-
-        petsListView.setAdapter(mAdapter);
-
-        if (cursor != null)
-            cursor.close();
-    }
-
     private void insertDummyPet() {
         ContentValues petValues = new ContentValues();
 
