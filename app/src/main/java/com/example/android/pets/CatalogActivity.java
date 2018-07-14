@@ -44,6 +44,8 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
 
     private PetCursorAdapter mAdapter;
 
+    private static final int LOADER_ID = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,7 +80,7 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         petsListView.setAdapter(mAdapter);
         petsListView.setEmptyView(emptyView);
 
-        getLoaderManager().initLoader(0, null, this);
+        getLoaderManager().initLoader(LOADER_ID, null, this);
     }
 
     @Override

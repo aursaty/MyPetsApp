@@ -15,8 +15,12 @@
  */
 package com.example.android.pets;
 
+import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.CursorLoader;
+import android.content.Loader;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
@@ -37,28 +41,26 @@ import com.example.android.pets.data.PetContract.PetEntry;
 /**
  * Allows user to create a new pet or edit an existing one.
  */
-public class EditorActivity extends AppCompatActivity {
+public class EditorActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    private static final int LOADER_ID = 0;
+    private static final String PET_URI_BUNDLE_KEY = "PET_URI_BUNDLE_KEY";
     /**
      * EditText field to enter the pet's name
      */
     private EditText mNameEditText;
-
     /**
      * EditText field to enter the pet's breed
      */
     private EditText mBreedEditText;
-
     /**
      * EditText field to enter the pet's weight
      */
     private EditText mWeightEditText;
-
     /**
      * EditText field to enter the pet's gender
      */
     private Spinner mGenderSpinner;
-
     /**
      * Gender of the pet. The possible values are:
      * 0 for unknown gender, 1 for male, 2 for female.
@@ -73,9 +75,14 @@ public class EditorActivity extends AppCompatActivity {
         Uri petUri = getIntent().getData();
         if (petUri == null)
             setTitle(getString(R.string.editor_activity_title_new_pet));
-        else
+        else {
             setTitle(getString(R.string.editor_activity_title_edit_pet));
 
+            Bundle bundle = new Bundle();
+            bundle.putString(PET_URI_BUNDLE_KEY, String.valueOf(petUri));
+
+            getLoaderManager().initLoader(LOADER_ID, bundle, this);
+        }
         // Find all relevant views that we will need to read user input from
         mNameEditText = findViewById(R.id.edit_pet_name);
         mBreedEditText = findViewById(R.id.edit_pet_breed);
@@ -161,6 +168,52 @@ public class EditorActivity extends AppCompatActivity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        String[] projection = {
+                PetEntry._ID,
+                PetEntry.COLUMN_PET_NAME,
+                PetEntry.COLUMN_PET_BREED,
+                PetEntry.COLUMN_PET_GENDER,
+                PetEntry.COLUMN_PET_WEIGHT
+        };
+
+        String petUriString = bundle.getString(PET_URI_BUNDLE_KEY);
+        Uri petUri = Uri.parse(petUriString);
+
+        return new CursorLoader(this, petUri, projection, null, null, null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        if (cursor.moveToFirst()) {
+            mNameEditText.setText(cursor.getString(cursor.getColumnIndex(PetEntry.COLUMN_PET_NAME)));
+            mBreedEditText.setText(cursor.getString(cursor.getColumnIndex(PetEntry.COLUMN_PET_BREED)));
+            mWeightEditText.setText(cursor.getInt(cursor.getColumnIndex(PetEntry.COLUMN_PET_WEIGHT)));
+
+            int gender = cursor.getInt(cursor.getColumnIndex(PetEntry.COLUMN_PET_GENDER));
+            switch (gender) {
+                case PetEntry.GENDER_MALE:
+                    mGenderSpinner.setSelection(1);
+                    break;
+                case PetEntry.GENDER_FEMALE:
+                    mGenderSpinner.setSelection(2);
+                    break;
+                default:
+                    mGenderSpinner.setSelection(0);
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mNameEditText.setText(null);
+        mBreedEditText.setText(null);
+        mGenderSpinner.setSelection(0);
+        mWeightEditText.setText(null);
     }
 
     private long insertPet() {
