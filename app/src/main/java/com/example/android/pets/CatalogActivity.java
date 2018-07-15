@@ -147,5 +147,6 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
 
     public void deleteAllPets() {
         getContentResolver().delete(PetEntry.CONTENT_URI, null, null);
+        getContentResolver().notifyChange(PetEntry.CONTENT_URI, null);
     }
 }

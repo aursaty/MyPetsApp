@@ -296,7 +296,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             return -1;
 
         int weight = 0;
-        if (TextUtils.isEmpty(weightString))
+        if (!TextUtils.isEmpty(weightString))
             weight = Integer.parseInt(weightString);
 
         ContentValues petValue = new ContentValues();
@@ -362,7 +362,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
     private void showDeleteConfirmationDialog() {
         // Create an AlertDialog.Builder and set the message, and click listeners
-        // for the postivie and negative buttons on the dialog.
+        // for the positive and negative buttons on the dialog.
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.delete_dialog_msg);
         builder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
